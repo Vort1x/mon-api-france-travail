@@ -7,36 +7,47 @@ app.get('/offres', async (req, res) => {
         const CLIENT_ID = process.env.CLIENT_ID;
         const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-        // TEST : On utilise uniquement le scope de l'API sans le préfixe application
-        // C'est le format le plus courant pour les accès "Offres d'emploi v2"
-        const scope = "api_offresdemploiv2 o2dso8w";
+        // 1. Authentification - Configuration stricte selon la doc France Travail
+        const authUrl = 'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire';
         
-        // On construit la chaîne manuellement pour être sûr de l'encodage de l'espace
-        const authData = `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=${encodeURIComponent(scope)}`;
+        // Utilisation de URLSearchParams pour un encodage parfait
+        const params = new URLSearchParams();
+        params.append('grant_type', 'client_credentials');
+        params.append('client_id', CLIENT_ID);
+        params.append('client_secret', CLIENT_SECRET);
+        params.append('scope', 'api_offresdemploiv2 o2dso8w');
 
-        const tokenRes = await axios.post(
-            'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire',
-            authData,
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-        );
+        const tokenRes = await axios.post(authUrl, params.toString(), {
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded' 
+            }
+        });
 
         const token = tokenRes.data.access_token;
 
-        const response = await axios.get(
-            'https://api.emploi-store.fr/partenaire/offresemploi/v2/offres/search',
-            {
-                headers: { 'Authorization': `Bearer ${token}` },
-                params: { range: '0-9' }
+        // 2. Appel API Offres d'emploi v2
+        const response = await axios.get('https://api.emploi-store.fr/partenaire/offresemploi/v2/offres/search', {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            },
+            params: { 
+                range: '0-9' // Paramètre obligatoire pour tester la réponse
             }
-        );
+        });
 
         res.json(response.data);
 
     } catch (error) {
-        const errorData = error.response ? error.response.data : error.message;
-        res.status(500).json({ message: "Erreur Auth", details: errorData });
+        // Log complet pour voir la réponse de France Travail en cas d'échec
+        const errorDetail = error.response ? error.response.data : error.message;
+        console.error("Détails de l'erreur:", errorDetail);
+        res.status(500).json({ 
+            message: "Erreur lors de la communication avec France Travail", 
+            details: errorDetail 
+        });
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Serveur sur port ${PORT}`));
+app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
