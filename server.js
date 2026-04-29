@@ -5,8 +5,8 @@ const app = express();
 app.get('/offres', async (req, res) => {
     try {
         // Récupération des identifiants depuis les variables d'environnement Render
-        const CLIENT_ID = process.env.PAR_studentevent_0fb9b30330edb0b9837684fc1609b79135f634d9a7d99488888560e77066f531;
-        const CLIENT_SECRET = process.env.77bab34551cbf12894733ac789460989dc27cc3e2dab38008467718353047926;
+        const CLIENT_ID = process.env.CLIENT_ID;
+        const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
         // Configuration précise pour France Travail
         // On utilise URLSearchParams pour éviter les erreurs d'encodage du scope
