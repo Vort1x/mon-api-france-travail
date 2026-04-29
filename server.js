@@ -7,10 +7,10 @@ app.get('/offres', async (req, res) => {
         const CLIENT_ID = process.env.CLIENT_ID;
         const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-        // TEST : On n'utilise QUE le scope de l'API Offres d'emploi
-        // Si ça échoue, essaie de remplacer par : "api_offresdemploiv2" (sans le o2dso8w)
+        // ÉTAPE 1 : RÉCUPÉRER LE TOKEN
+        // On utilise exactement les scopes affichés dans ton interface partenaire
         const scope = "api_offresdemploiv2 o2dso8w";
-
+        
         const params = new URLSearchParams();
         params.append('grant_type', 'client_credentials');
         params.append('client_id', CLIENT_ID);
@@ -25,24 +25,24 @@ app.get('/offres', async (req, res) => {
 
         const token = tokenRes.data.access_token;
 
+        // ÉTAPE 2 : RÉCUPÉRER LES OFFRES
         const response = await axios.get(
             'https://api.emploi-store.fr/partenaire/offresemploi/v2/offres/search',
             {
                 headers: { 'Authorization': `Bearer ${token}` },
-                params: { motsCles: 'iOS', range: '0-9' }
+                params: { range: '0-9' } // On commence simple sans motsCles pour tester
             }
         );
 
         res.json(response.data);
 
     } catch (error) {
-        console.error("Détails de l'erreur:", error.response ? error.response.data : error.message);
-        res.status(500).json({ 
-            message: "Échec de l'authentification",
-            franceTravailError: error.response ? error.response.data : error.message 
-        });
+        // On affiche l'erreur complète pour comprendre si c'est le scope ou autre chose
+        const errorData = error.response ? error.response.data : error.message;
+        console.error("Erreur détaillée:", errorData);
+        res.status(500).json({ message: "Erreur Auth", details: errorData });
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Serveur prêt sur port ${PORT}`));
+app.listen(PORT, () => console.log(`Serveur Live sur ${PORT}`));
