@@ -9,7 +9,7 @@ const CLIENT_SECRET = "77bab34551cbf12894733ac789460989dc27cc3e2dab3800846771835
 app.get('/offres', async (req, res) => {
     try {
         // 1. Demander le token à France Travail (Le POST que tu voulais éviter en Swift)
-        const authData = `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=api_offresdemploiv2 o2dso8w`;
+        const authData = `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=application_${CLIENT_ID} api_offresdemploiv2 o2dso8w`;
         
         const tokenRes = await axios.post('https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire', authData, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
