@@ -15,7 +15,8 @@ app.get('/offres', async (req, res) => {
         params.append('grant_type', 'client_credentials');
         params.append('client_id', CLIENT_ID);
         params.append('client_secret', CLIENT_SECRET);
-        params.append('scope', scope);
+        // On ne met QUE "api_offresdemploiv2" sans rien d'autre
+        params.append('scope', 'api_offresdemploiv2');
 
         const tokenRes = await axios.post(
             'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire',
