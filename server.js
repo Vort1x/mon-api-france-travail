@@ -7,13 +7,15 @@ app.get('/offres', async (req, res) => {
         const CLIENT_ID = process.env.CLIENT_ID;
         const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-        // TEST : On envoie les identifiants SANS le paramètre scope
-        // France Travail devrait retourner les droits par défaut de ton application
+        // On utilise le scope complet avec le préfixe application
+        // Attention : pas d'espace en trop, juste un seul entre les deux scopes
+        const scope = `application_${CLIENT_ID} api_offresdemploiv2 o2dso8w`;
+
         const params = new URLSearchParams();
         params.append('grant_type', 'client_credentials');
         params.append('client_id', CLIENT_ID);
         params.append('client_secret', CLIENT_SECRET);
-        // On ne met PAS params.append('scope', ...) ici
+        params.append('scope', scope);
 
         const tokenRes = await axios.post(
             'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire',
@@ -23,7 +25,6 @@ app.get('/offres', async (req, res) => {
 
         const token = tokenRes.data.access_token;
 
-        // Appel de l'API
         const response = await axios.get(
             'https://api.emploi-store.fr/partenaire/offresemploi/v2/offres/search',
             {
