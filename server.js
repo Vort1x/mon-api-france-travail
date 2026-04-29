@@ -2,35 +2,36 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// Tes identifiants France Travail (à garder secrets !)
-const CLIENT_ID = "PAR_studentevent_0fb9b30330edb0b9837684fc1609b79135f634d9a7d99488888560e77066f531";
-const CLIENT_SECRET = "77bab34551cbf12894733ac789460989dc27cc3e2dab38008467718353047926";
-
 app.get('/offres', async (req, res) => {
     try {
-        // 1. Demander le token à France Travail (Le POST que tu voulais éviter en Swift)
-        const authData = `grant_type=client_credentials&client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&scope=application_${process.env.CLIENT_ID} api_offresdemploiv2 o2dso8w`;
+        const CLIENT_ID = process.env.CLIENT_ID;
+        const CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+        // Configuration du Scope exacte pour France Travail
+        const scope = `application_${CLIENT_ID} api_offresdemploiv2 o2dso8w`;
+        const authData = `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=${scope}`;
         
+        // 1. Récupération du Token
         const tokenRes = await axios.post('https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire', authData, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
         const token = tokenRes.data.access_token;
 
-        // 2. Récupérer les offres (Le GET avec le token tout frais)
+        // 2. Appel de l'API avec le nouveau token
         const response = await axios.get('https://api.emploi-store.fr/partenaire/offresemploi/v2/offres/search', {
             headers: { 'Authorization': `Bearer ${token}` },
-            params: { motsCles: req.query.motsCles || 'iOS' }
+            params: { motsCles: 'iOS', range: '0-9' }
         });
 
-        // 3. Renvoyer les résultats à ton iPhone
         res.json(response.data);
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erreur lors de la communication avec France Travail" });
+        // Log plus détaillé pour t'aider dans Render
+        console.error("Erreur détaillée:", error.response ? error.response.data : error.message);
+        res.status(500).json({ error: "Erreur France Travail", details: error.response ? error.response.data : null });
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Serveur prêt sur le port ${PORT}`));
