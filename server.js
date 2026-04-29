@@ -7,19 +7,16 @@ app.get('/offres', async (req, res) => {
         const CLIENT_ID = process.env.CLIENT_ID;
         const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-        // On utilise le scope complet avec le préfixe application
-        // Attention : pas d'espace en trop, juste un seul entre les deux scopes
-        const scope = `application_${CLIENT_ID} api_offresdemploiv2 o2dso8w`;
-
-        const params = new URLSearchParams();
-        params.append('grant_type', 'client_credentials');
-        params.append('client_id', CLIENT_ID);
-        params.append('client_secret', CLIENT_SECRET);
-        params.append('scope', scope);
+        // TEST : On utilise uniquement le scope de l'API sans le préfixe application
+        // C'est le format le plus courant pour les accès "Offres d'emploi v2"
+        const scope = "api_offresdemploiv2 o2dso8w";
+        
+        // On construit la chaîne manuellement pour être sûr de l'encodage de l'espace
+        const authData = `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=${encodeURIComponent(scope)}`;
 
         const tokenRes = await axios.post(
             'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire',
-            params.toString(),
+            authData,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
 
@@ -37,7 +34,6 @@ app.get('/offres', async (req, res) => {
 
     } catch (error) {
         const errorData = error.response ? error.response.data : error.message;
-        console.error("Détails:", errorData);
         res.status(500).json({ message: "Erreur Auth", details: errorData });
     }
 });
