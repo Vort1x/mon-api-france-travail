@@ -1,0 +1,13 @@
+{
+  "name": "mon-api-france-travail",
+  "version": "1.0.0",
+  "description": "Proxy pour France Travail",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
